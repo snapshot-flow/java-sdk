@@ -209,7 +209,7 @@ public final class SnapshotFlowClient {
             return this;
         }
 
-        /** Advanced/testing: supply a custom transport instead of the JDK HttpClient. */
+        /** Advanced/testing: supply a custom transport instead of the default JDK transport. */
         public Builder transport(HttpTransport transport) {
             this.transport = transport;
             return this;

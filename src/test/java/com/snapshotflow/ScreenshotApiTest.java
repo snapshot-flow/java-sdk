@@ -81,12 +81,12 @@ class ScreenshotApiTest {
     }
 
     @Test
-    void htmlIsBase64EncodedOnTheWire() {
+    void htmlIsBase64EncodedOnTheWire() throws Exception {
         StubTransport transport = new StubTransport().enqueue(Responses.binary(200, "image/png", new byte[]{9}, null));
 
         client(transport).capture(ScreenshotRequest.html("<h1>Hi</h1>").build());
 
         String expected = Base64.getEncoder().encodeToString("<h1>Hi</h1>".getBytes(StandardCharsets.UTF_8));
-        assertTrue(transport.last().url.contains("html=" + URLEncoder.encode(expected, StandardCharsets.UTF_8)));
+        assertTrue(transport.last().url.contains("html=" + URLEncoder.encode(expected, StandardCharsets.UTF_8.name())));
     }
 }

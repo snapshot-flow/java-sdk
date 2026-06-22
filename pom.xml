@@ -44,9 +44,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <!-- Java 11 baseline: java.net.http.HttpClient ships in the JDK, so the SDK
-         pulls in no HTTP dependency of its own. Compiled here with JDK 17. -->
-    <maven.compiler.release>11</maven.compiler.release>
+    <!-- Java 8 baseline: the transport runs on the JDK's HttpURLConnection, so the
+         SDK pulls in no HTTP dependency of its own. Compiled here with JDK 17. -->
+    <maven.compiler.release>8</maven.compiler.release>
 
     <jackson.version>2.17.2</jackson.version>
     <junit.version>5.10.2</junit.version>

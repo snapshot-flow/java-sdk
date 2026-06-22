@@ -20,6 +20,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - **Health** — `GET /health`.
   - **Webhook verification** — `WebhookVerifier` for HMAC-SHA256 signature checking
     and payload parsing on receivers.
-- Built on the JDK `HttpClient` (Java 11+); Jackson is the only runtime dependency.
+- Built on the JDK `HttpURLConnection` (Java 8+); Jackson is the only runtime dependency.
 - Typed exception hierarchy and automatic retry of idempotent requests on
   transient failures.

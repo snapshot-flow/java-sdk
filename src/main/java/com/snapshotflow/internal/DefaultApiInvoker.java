@@ -5,6 +5,9 @@ import com.snapshotflow.exception.NetworkException;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -19,7 +22,8 @@ import java.util.Set;
  */
 public final class DefaultApiInvoker implements ApiInvoker {
 
-    private static final Set<Integer> RETRYABLE_STATUSES = Set.of(408, 429, 500, 502, 503, 504);
+    private static final Set<Integer> RETRYABLE_STATUSES =
+            Collections.unmodifiableSet(new HashSet<>(Arrays.asList(408, 429, 500, 502, 503, 504)));
 
     private final ClientConfig config;
     private final HttpTransport transport;
