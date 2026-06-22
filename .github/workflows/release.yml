@@ -1,0 +1,38 @@
+name: Publish to Maven Central
+
+# Releases are tag-driven: push a tag like v1.0.0 and this builds, signs and
+# uploads the artifact to the Sonatype Central Portal. The pom in the repo can
+# stay on -SNAPSHOT; the release version is taken from the tag.
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17 + Maven settings + GPG
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          # Generates ~/.m2/settings.xml with a <server id="central"> whose
+          # username/password read from these env vars, and imports the GPG key.
+          server-id: central
+          server-username: CENTRAL_TOKEN_USER
+          server-password: CENTRAL_TOKEN_PASS
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Set release version from the tag (v1.2.3 -> 1.2.3)
+        run: mvn -B versions:set -DnewVersion="${GITHUB_REF_NAME#v}" -DgenerateBackupPoms=false
+
+      - name: Build, sign and publish
+        run: mvn -B -P release deploy
+        env:
+          CENTRAL_TOKEN_USER: ${{ secrets.CENTRAL_TOKEN_USER }}
+          CENTRAL_TOKEN_PASS: ${{ secrets.CENTRAL_TOKEN_PASS }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

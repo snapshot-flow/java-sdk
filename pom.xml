@@ -11,7 +11,7 @@
 
   <name>SnapshotFlow Java SDK</name>
   <description>Official Java client for the SnapshotFlow screenshot API — capture, batch, diff, async jobs, history and webhook verification.</description>
-  <url>https://github.com/snapshotflow/snapshotflow-java</url>
+  <url>https://github.com/snapshot-flow/java-sdk</url>
 
   <licenses>
     <license>
@@ -35,9 +35,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:https://github.com/snapshotflow/snapshotflow-java.git</connection>
-    <developerConnection>scm:git:git@github.com:snapshotflow/snapshotflow-java.git</developerConnection>
-    <url>https://github.com/snapshotflow/snapshotflow-java</url>
+    <connection>scm:git:https://github.com/snapshot-flow/java-sdk.git</connection>
+    <developerConnection>scm:git:git@github.com:snapshot-flow/java-sdk.git</developerConnection>
+    <url>https://github.com/snapshot-flow/java-sdk</url>
     <tag>HEAD</tag>
   </scm>
 
@@ -124,6 +124,7 @@
       <id>release</id>
       <build>
         <plugins>
+          <!-- GPG-sign every artifact (Maven Central requires .asc signatures). -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
@@ -135,6 +136,29 @@
                 <goals><goal>sign</goal></goals>
               </execution>
             </executions>
+            <configuration>
+              <!-- Headless signing in CI (no interactive pinentry). -->
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </plugin>
+
+          <!-- Upload the signed bundle to the Sonatype Central Portal.
+               `mvn -P release deploy` publishes; credentials come from the
+               `central` server id in settings.xml. -->
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.7.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <!-- false: upload, then click "Publish" in the portal to review first.
+                   Set true once you trust the pipeline to auto-release. -->
+              <autoPublish>false</autoPublish>
+            </configuration>
           </plugin>
         </plugins>
       </build>
