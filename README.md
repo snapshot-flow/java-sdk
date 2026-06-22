@@ -2,11 +2,11 @@
 
 Official Java client for the [SnapshotFlow](https://snapshotflow.com) screenshot API — capture website screenshots and PDFs, run batch captures and visual diffs, submit async jobs with webhooks, browse your screenshot history, manage API keys, and verify inbound webhook signatures.
 
-- **Zero HTTP dependencies** — built on the JDK's `java.net.http.HttpClient` (Java 11+). The only runtime dependency is Jackson for JSON.
+- **Zero HTTP dependencies** — built on the JDK's `HttpURLConnection` (Java 8+). The only runtime dependency is Jackson for JSON.
 - **Typed, fluent, immutable** — builders for requests, typed results, a precise exception hierarchy.
 - **Thread-safe** — build one client and share it across your app.
 
-> Requires **Java 11 or newer**.
+> Requires **Java 8 or newer**.
 
 ---
 
