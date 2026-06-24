@@ -6,6 +6,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-24
+
 ### Added
 - Initial release. Full coverage of the SnapshotFlow public API:
   - **Capture** — `GET /screenshot`, synchronous (`capture`) and async (`submit`),
