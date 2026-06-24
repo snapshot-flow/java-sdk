@@ -12,8 +12,6 @@ Official Java client for the [SnapshotFlow](https://snapshotflow.com) screenshot
 
 ## Installation
 
-> Not yet published to Maven Central. Until the first release, install locally with `mvn install` and depend on the snapshot.
-
 **Maven**
 
 ```xml
