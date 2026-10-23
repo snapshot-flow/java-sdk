@@ -6,7 +6,7 @@
 
   <groupId>com.snapshotflow</groupId>
   <artifactId>snapshotflow-java</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>SnapshotFlow Java SDK</name>
