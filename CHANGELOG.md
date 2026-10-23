@@ -6,6 +6,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-23
+
+### Fixed
+- `User-Agent` now reports the real SDK version; 1.0.0 sent `snapshotflow-java/1.0.0-SNAPSHOT`.
+  The version is stamped from the build, so it can no longer drift from the release.
+- `SnapshotFlowClient.Builder.build()` rejects a null, zero or negative timeout and a
+  negative retry backoff with a clear `IllegalArgumentException`, instead of failing later.
+- `jobs().await(...)` no longer sleeps past its timeout when the poll interval is longer
+  than the time remaining.
+
+### Changed
+- Internal cleanup with no public API changes: shared `Retry-After` parsing and URL encoding,
+  constant sets for error codes.
+- Build: Maven Wrapper, CI on JDK 11/17/21 and Windows for every pull request.
+
 ## [1.0.0] - 2026-06-24
 
 ### Added
