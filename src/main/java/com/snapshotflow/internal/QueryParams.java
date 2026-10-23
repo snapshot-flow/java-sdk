@@ -1,8 +1,5 @@
 package com.snapshotflow.internal;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,17 +47,9 @@ public final class QueryParams {
             if (sb.length() > 0) {
                 sb.append('&');
             }
-            sb.append(enc(p[0])).append('=').append(enc(p[1]));
+            sb.append(Encoding.queryComponent(p[0])).append('=').append(Encoding.queryComponent(p[1]));
         }
         return sb.toString();
-    }
-
-    private static String enc(String s) {
-        try {
-            return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError("UTF-8 is always supported", e);
-        }
     }
 
     /** Render doubles without a trailing ".0" so e.g. 1.0 → "1" matches integer-ish server params. */

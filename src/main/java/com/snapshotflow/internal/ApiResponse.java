@@ -1,6 +1,7 @@
 package com.snapshotflow.internal;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -33,6 +34,20 @@ public final class ApiResponse {
 
     public Optional<String> header(String name) {
         return Optional.ofNullable(headers.get(name.toLowerCase(Locale.ROOT)));
+    }
+
+    /**
+     * The {@code Retry-After} header as a delay, when present in delta-seconds form.
+     * HTTP-date values are not supported and yield an empty result.
+     */
+    public Optional<Duration> retryAfter() {
+        return header("retry-after").flatMap(value -> {
+            try {
+                return Optional.of(Duration.ofSeconds(Math.max(0, Long.parseLong(value.trim()))));
+            } catch (NumberFormatException e) {
+                return Optional.empty();
+            }
+        });
     }
 
     public boolean isSuccess() {

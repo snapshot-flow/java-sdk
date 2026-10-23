@@ -9,13 +9,22 @@ import com.snapshotflow.exception.RateLimitException;
 import com.snapshotflow.exception.SnapshotFlowException;
 import com.snapshotflow.exception.ValidationException;
 
-import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /** Translates a non-2xx {@link ApiResponse} into the most specific SDK exception. */
 public final class ErrorDecoder {
+
+    private static final Set<String> AUTH_CODES = unmodifiableSet(
+            "UNAUTHORIZED", "TOKEN_EXPIRED", "TOKEN_INVALID", "BAD_CREDENTIALS", "ACCOUNT_LOCKED");
+
+    private static final Set<String> VALIDATION_CODES = unmodifiableSet(
+            "VALIDATION_ERROR", "INVALID_URL", "INVALID_PARAMS");
 
     private ErrorDecoder() {
     }
@@ -58,49 +67,29 @@ public final class ErrorDecoder {
         String traceId = response.header("x-snapshotflow-trace-id").orElse(null);
 
         if (status == 429 || "RATE_LIMITED".equals(code)) {
-            return new RateLimitException(status, code, message, traceId, details, parseRetryAfter(response));
+            return new RateLimitException(status, code, message, traceId, details, response.retryAfter().orElse(null));
         }
         if (status == 402 || "QUOTA_EXCEEDED".equals(code)) {
             return new QuotaExceededException(status, code, message, traceId, details);
         }
-        if (status == 401 || status == 403 || isAuthCode(code)) {
+        if (status == 401 || status == 403 || AUTH_CODES.contains(code)) {
             return new AuthenticationException(status, code, message, traceId, details);
         }
         if (status == 404 || "NOT_FOUND".equals(code)) {
             return new NotFoundException(status, code, message, traceId, details);
         }
-        if (status == 400 || isValidationCode(code)) {
+        if (status == 400 || VALIDATION_CODES.contains(code)) {
             return new ValidationException(status, code, message, traceId, details);
         }
         return new ApiException(status, code, message, traceId, details);
     }
 
-    private static boolean isAuthCode(String code) {
-        return "UNAUTHORIZED".equals(code)
-                || "TOKEN_EXPIRED".equals(code)
-                || "TOKEN_INVALID".equals(code)
-                || "BAD_CREDENTIALS".equals(code)
-                || "ACCOUNT_LOCKED".equals(code);
-    }
-
-    private static boolean isValidationCode(String code) {
-        return "VALIDATION_ERROR".equals(code)
-                || "INVALID_URL".equals(code)
-                || "INVALID_PARAMS".equals(code);
+    private static Set<String> unmodifiableSet(String... values) {
+        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(values)));
     }
 
     @SuppressWarnings("unchecked")
     private static Map<String, Object> convertToMap(JsonNode node) {
         return Json.mapper().convertValue(node, Map.class);
-    }
-
-    private static Duration parseRetryAfter(ApiResponse response) {
-        return response.header("retry-after").map(value -> {
-            try {
-                return Duration.ofSeconds(Math.max(0, Long.parseLong(value.trim())));
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }).orElse(null);
     }
 }

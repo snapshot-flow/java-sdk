@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -24,6 +23,8 @@ public final class DefaultApiInvoker implements ApiInvoker {
 
     private static final Set<Integer> RETRYABLE_STATUSES =
             Collections.unmodifiableSet(new HashSet<>(Arrays.asList(408, 429, 500, 502, 503, 504)));
+
+    private static final String ACCEPT = "application/json, image/*, application/pdf";
 
     private final ClientConfig config;
     private final HttpTransport transport;
@@ -80,7 +81,7 @@ public final class DefaultApiInvoker implements ApiInvoker {
     private Map<String, String> buildHeaders(ApiRequest request) {
         Map<String, String> headers = new LinkedHashMap<>();
         headers.put("User-Agent", config.userAgent());
-        headers.put("Accept", "application/json, image/*, application/pdf");
+        headers.put("Accept", ACCEPT);
         if (request.contentType() != null) {
             headers.put("Content-Type", request.contentType());
         }
@@ -90,16 +91,9 @@ public final class DefaultApiInvoker implements ApiInvoker {
         return headers;
     }
 
+    /** Honour the server's Retry-After when given; otherwise fall back to linear backoff. */
     private Duration retryDelay(int attempt, ApiResponse response) {
-        Optional<String> retryAfter = response.header("retry-after");
-        if (retryAfter.isPresent()) {
-            try {
-                return Duration.ofSeconds(Math.max(0, Long.parseLong(retryAfter.get().trim())));
-            } catch (NumberFormatException ignored) {
-                // Not a delta-seconds value — fall back to linear backoff.
-            }
-        }
-        return config.retryBackoff().multipliedBy(attempt);
+        return response.retryAfter().orElseGet(() -> config.retryBackoff().multipliedBy(attempt));
     }
 
     private static void sleep(Duration duration) {

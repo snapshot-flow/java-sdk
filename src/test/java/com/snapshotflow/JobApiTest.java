@@ -1,5 +1,6 @@
 package com.snapshotflow;
 
+import com.snapshotflow.exception.SnapshotFlowException;
 import com.snapshotflow.job.Job;
 import com.snapshotflow.support.Responses;
 import com.snapshotflow.support.StubTransport;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JobApiTest {
@@ -42,5 +44,19 @@ class JobApiTest {
         assertTrue(job.isFailed());
         assertEquals("TIMEOUT", job.errorCode().orElse(null));
         assertEquals("boom", job.error().orElse(null));
+    }
+
+    @Test
+    void awaitDoesNotSleepPastTheDeadline() {
+        // Answer every poll with "processing", however many polls fit before the deadline.
+        StubTransport transport = new StubTransport()
+                .handler(request -> Responses.json(200, "{\"id\":\"j3\",\"status\":\"processing\",\"createdAt\":\"t0\"}"));
+
+        long start = System.nanoTime();
+        assertThrows(SnapshotFlowException.class,
+                () -> client(transport).jobs().await("j3", Duration.ofMillis(100), Duration.ofSeconds(30)));
+        long elapsedMillis = (System.nanoTime() - start) / 1_000_000;
+
+        assertTrue(elapsedMillis < 5_000, "await overshot its timeout: " + elapsedMillis + "ms");
     }
 }

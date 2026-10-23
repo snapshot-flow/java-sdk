@@ -13,6 +13,7 @@ import com.snapshotflow.internal.DefaultApiInvoker;
 import com.snapshotflow.internal.HttpTransport;
 import com.snapshotflow.internal.JdkHttpTransport;
 import com.snapshotflow.internal.Sdk;
+import com.snapshotflow.internal.Validate;
 import com.snapshotflow.job.JobApi;
 import com.snapshotflow.screenshot.ScreenshotApi;
 import com.snapshotflow.screenshot.ScreenshotRequest;
@@ -215,7 +216,11 @@ public final class SnapshotFlowClient {
             return this;
         }
 
+        /** @throws IllegalArgumentException if a timeout is null or not positive, or the backoff is null or negative */
         public SnapshotFlowClient build() {
+            Validate.positive(connectTimeout, "connectTimeout");
+            Validate.positive(requestTimeout, "requestTimeout");
+            Validate.notNegative(retryBackoff, "retryBackoff");
             ClientConfig config = new ClientConfig(stripTrailingSlashes(baseUrl), connectTimeout,
                     requestTimeout, maxRetries, retryBackoff, userAgent);
             HttpTransport effectiveTransport = transport != null
