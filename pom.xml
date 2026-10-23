@@ -72,6 +72,14 @@
   </dependencies>
 
   <build>
+    <resources>
+      <!-- Filtered so version.properties carries ${project.version} (read by internal.Sdk). -->
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -83,6 +91,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
+        <configuration>
+          <systemPropertyVariables>
+            <snapshotflow.expectedVersion>${project.version}</snapshotflow.expectedVersion>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
 
       <!-- Source jar — required for Maven Central, useful for IDE navigation. -->
