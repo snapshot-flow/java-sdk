@@ -9,6 +9,7 @@ import com.snapshotflow.internal.Json;
 import com.snapshotflow.internal.Validate;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 /** Operations on async capture jobs ({@code GET /jobs/:id}). */
 public final class JobApi {
@@ -48,11 +49,14 @@ public final class JobApi {
             if (job.isTerminal()) {
                 return job;
             }
-            if (System.nanoTime() >= deadlineNanos) {
+            long remainingNanos = deadlineNanos - System.nanoTime();
+            if (remainingNanos <= 0) {
                 throw new SnapshotFlowException("Timed out after " + timeout + " waiting for job " + jobId);
             }
             try {
-                Thread.sleep(pollInterval.toMillis());
+                // Sleep no longer than the time left, so a long poll interval can't overshoot the timeout. Round it up
+                // to a whole millisecond so we don't wake just before the deadline and poll once more.
+                Thread.sleep(Math.min(pollInterval.toMillis(), TimeUnit.NANOSECONDS.toMillis(remainingNanos + 999_999)));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new SnapshotFlowException("Interrupted while waiting for job " + jobId, e);

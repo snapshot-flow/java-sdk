@@ -15,6 +15,8 @@ import com.snapshotflow.internal.Validate;
  */
 public final class HistoryApi {
 
+    private static final int DEFAULT_PAGE_SIZE = 50;
+
     private final ApiInvoker invoker;
 
     public HistoryApi(ApiInvoker invoker) {
@@ -23,7 +25,7 @@ public final class HistoryApi {
 
     /** First page of history (limit 50, offset 0), newest first. */
     public ScreenshotPage list() {
-        return list(50, 0);
+        return list(DEFAULT_PAGE_SIZE, 0);
     }
 
     public ScreenshotPage list(int limit, int offset) {

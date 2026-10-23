@@ -1,5 +1,7 @@
 package com.snapshotflow.internal;
 
+import java.time.Duration;
+
 /** Tiny argument-checking helpers. Throw {@link IllegalArgumentException} on programmer error. */
 public final class Validate {
 
@@ -16,6 +18,22 @@ public final class Validate {
     public static String notBlank(String value, String name) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException(name + " must not be null or blank");
+        }
+        return value;
+    }
+
+    public static Duration positive(Duration value, String name) {
+        notNull(value, name);
+        if (value.isZero() || value.isNegative()) {
+            throw new IllegalArgumentException(name + " must be positive (was " + value + ")");
+        }
+        return value;
+    }
+
+    public static Duration notNegative(Duration value, String name) {
+        notNull(value, name);
+        if (value.isNegative()) {
+            throw new IllegalArgumentException(name + " must not be negative (was " + value + ")");
         }
         return value;
     }
