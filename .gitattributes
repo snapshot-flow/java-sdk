@@ -1,0 +1,8 @@
+# Normalise line endings to LF in the repo (matches .editorconfig), even on Windows checkouts.
+* text=auto eol=lf
+
+# Windows scripts must keep CRLF to run under cmd.exe.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+*.jar binary

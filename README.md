@@ -322,6 +322,15 @@ The server's `/.well-known/*`, `/oauth/*` and `/mcp` endpoints are internal
 infrastructure for the Claude.ai MCP integration and are intentionally not
 exposed here.
 
+## Building from source
+
+The Maven Wrapper downloads the right Maven version, so only a JDK 11+ is needed:
+
+```sh
+./mvnw verify        # macOS / Linux
+mvnw.cmd verify      # Windows
+```
+
 ---
 
 ## License
