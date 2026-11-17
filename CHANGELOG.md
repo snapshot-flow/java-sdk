@@ -6,17 +6,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-17
+
 ### Added
-- **Batch** — `BatchRequest.Builder`: `blockAds(boolean)`, `blockCookieBanners(boolean)`, and `waitUntil(WaitUntil)`.
-- **Batch** — `BatchItemResult.downloadUrl()` for `BatchResponseType.IMAGE_URLS` and async batch job results.
-- **Diff** — `DiffRequest.Builder`: `blockAds(boolean)`, `blockCookieBanners(boolean)`, and `waitUntil(WaitUntil)`.
-- **Async batch jobs** — `BatchApi.submit(...)`, `JobSubmission.total()` (with `jobId` camelCase support), `JobKind`, `JobProgress`, `Job.kind()`, `Job.progress()`, and `Job.batchResults()`.
-- **Content extraction** — `ExtractApi` (`client.extract()`), `ExtractRequest`, and `ExtractResult` for `GET /extract`.
-- **History** — `ScreenshotSummary.downloadUrl()` / `downloadUrlExpiresAt()`, and `HistoryApi.list(limit, offset, ttlSeconds, lite)`.
+- **Content extraction** — `client.extract()` (`GET /extract`) for fast Markdown, HTML, or plain-text extraction without rendering an image (`ExtractRequest`, `ExtractResult`).
+- **Async batch jobs** — submit batches asynchronously via `batch().submit(...)` and track completion progress and per-URL results in `jobs().get(...)` / `jobs().await(...)`.
+- **Batch & Diff options** — added ad blocking (`blockAds`), cookie-banner blocking (`blockCookieBanners`), and navigation wait strategy (`waitUntil`) to `BatchRequest` and `DiffRequest`, plus signed `downloadUrl()` support on `BatchItemResult` for `BatchResponseType.IMAGE_URLS`.
+- **History URLs & lite mode** — `history().list(...)` now exposes pre-signed download links on list items (`downloadUrl()`) and accepts optional `ttlSeconds` and `lite` parameters to skip link signing when only metadata is needed.
 
 ### Changed
-- Default `requestTimeout` raised from 60s to 90s so heavy-site `/batch` and `/diff` calls do not read-timeout before the server responds.
-- `diff().compare(...)` no longer auto-retries on transient HTTP failures to avoid duplicating renders and charging quota multiple times.
+- Raised default `requestTimeout` from 60s to 90s so heavy-site `/batch` and `/diff` requests do not time out on the client before the server finishes.
+- `diff().compare(...)` no longer auto-retries on transient HTTP errors to avoid duplicate renders and double quota charges.
 
 ## [1.0.1] - 2026-10-23
 
