@@ -1,5 +1,6 @@
 package com.snapshotflow.job;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Optional;
@@ -8,10 +9,12 @@ import java.util.Optional;
 public final class JobSubmission {
 
     @JsonProperty("job_id")
+    @JsonAlias("jobId")
     private String jobId;
     private JobStatus status;
     @JsonProperty("external_identifier")
     private String externalIdentifier;
+    private Integer total;
 
     public String jobId() {
         return jobId;
@@ -23,6 +26,11 @@ public final class JobSubmission {
 
     public Optional<String> externalIdentifier() {
         return Optional.ofNullable(externalIdentifier);
+    }
+
+    /** Total number of URLs queued (present on async batch submissions). */
+    public Optional<Integer> total() {
+        return Optional.ofNullable(total);
     }
 
     @Override

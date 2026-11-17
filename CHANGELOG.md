@@ -6,6 +6,18 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Batch** — `BatchRequest.Builder`: `blockAds(boolean)`, `blockCookieBanners(boolean)`, and `waitUntil(WaitUntil)`.
+- **Batch** — `BatchItemResult.downloadUrl()` for `BatchResponseType.IMAGE_URLS` and async batch job results.
+- **Diff** — `DiffRequest.Builder`: `blockAds(boolean)`, `blockCookieBanners(boolean)`, and `waitUntil(WaitUntil)`.
+- **Async batch jobs** — `BatchApi.submit(...)`, `JobSubmission.total()` (with `jobId` camelCase support), `JobKind`, `JobProgress`, `Job.kind()`, `Job.progress()`, and `Job.batchResults()`.
+- **Content extraction** — `ExtractApi` (`client.extract()`), `ExtractRequest`, and `ExtractResult` for `GET /extract`.
+- **History** — `ScreenshotSummary.downloadUrl()` / `downloadUrlExpiresAt()`, and `HistoryApi.list(limit, offset, ttlSeconds, lite)`.
+
+### Changed
+- Default `requestTimeout` raised from 60s to 90s so heavy-site `/batch` and `/diff` calls do not read-timeout before the server responds.
+- `diff().compare(...)` no longer auto-retries on transient HTTP failures to avoid duplicating renders and charging quota multiple times.
+
 ## [1.0.1] - 2026-10-23
 
 ### Fixed

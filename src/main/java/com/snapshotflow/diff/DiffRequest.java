@@ -3,6 +3,7 @@ package com.snapshotflow.diff;
 import com.snapshotflow.internal.QueryParams;
 import com.snapshotflow.internal.Validate;
 import com.snapshotflow.screenshot.ResponseType;
+import com.snapshotflow.screenshot.WaitUntil;
 
 /** A visual diff between two URLs ({@code GET /diff}). */
 public final class DiffRequest {
@@ -12,6 +13,9 @@ public final class DiffRequest {
     private final Integer width;
     private final Integer height;
     private final Double threshold;
+    private final Boolean blockAds;
+    private final Boolean blockCookieBanners;
+    private final WaitUntil waitUntil;
     private final ResponseType responseType;
 
     private DiffRequest(Builder b) {
@@ -20,6 +24,9 @@ public final class DiffRequest {
         this.width = b.width;
         this.height = b.height;
         this.threshold = b.threshold;
+        this.blockAds = b.blockAds;
+        this.blockCookieBanners = b.blockCookieBanners;
+        this.waitUntil = b.waitUntil;
         this.responseType = b.responseType;
     }
 
@@ -42,6 +49,9 @@ public final class DiffRequest {
         q.add("width", width);
         q.add("height", height);
         q.add("threshold", threshold);
+        q.add("block_ads", blockAds);
+        q.add("block_cookie_banners", blockCookieBanners);
+        q.add("wait_until", waitUntil == null ? null : waitUntil.wire());
         q.add("response_type", effectiveResponseType.wire());
         return q;
     }
@@ -52,6 +62,9 @@ public final class DiffRequest {
         private Integer width;
         private Integer height;
         private Double threshold;
+        private Boolean blockAds;
+        private Boolean blockCookieBanners;
+        private WaitUntil waitUntil;
         private ResponseType responseType;
 
         /** URL of the baseline ("before") page. Required. */
@@ -85,6 +98,21 @@ public final class DiffRequest {
         /** Matching threshold, 0–1 (lower = more sensitive). */
         public Builder threshold(double threshold) {
             this.threshold = threshold;
+            return this;
+        }
+
+        public Builder blockAds(boolean blockAds) {
+            this.blockAds = blockAds;
+            return this;
+        }
+
+        public Builder blockCookieBanners(boolean blockCookieBanners) {
+            this.blockCookieBanners = blockCookieBanners;
+            return this;
+        }
+
+        public Builder waitUntil(WaitUntil waitUntil) {
+            this.waitUntil = waitUntil;
             return this;
         }
 

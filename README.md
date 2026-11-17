@@ -194,16 +194,50 @@ Up to 10 URLs in one request, sharing options:
 
 ```java
 import com.snapshotflow.batch.*;
+import com.snapshotflow.job.*;
+import java.time.Duration;
 
 BatchResult result = client.batch().capture(
         BatchRequest.urls("https://a.com", "https://b.com", "https://c.com")
                 .format(OutputFormat.PNG)
                 .fullPage(true)
+                .blockAds(true)
+                .blockCookieBanners(true)
+                .waitUntil(WaitUntil.NETWORK_IDLE_2)
                 .responseType(BatchResponseType.BASE64)
                 .build());
 
 System.out.println(result.successes().size() + " ok, " + result.failures().size() + " failed");
 result.successes().forEach(item -> item.bytes().ifPresent(bytes -> { /* save */ }));
+
+// Or use BatchResponseType.IMAGE_URLS for signed download links:
+// item.downloadUrl().ifPresent(url -> ...);
+
+// Or run the batch asynchronously and poll progress + results:
+JobSubmission submission = client.batch().submit(
+        BatchRequest.urls("https://a.com", "https://b.com")
+                .blockAds(true)
+                .blockCookieBanners(true)
+                .build());
+Job batchJob = client.jobs().await(submission.jobId(), Duration.ofMinutes(2));
+batchJob.batchResults().forEach(item -> item.downloadUrl().ifPresent(System.out::println));
+```
+
+---
+
+## Content extraction
+
+Extract clean Markdown, HTML, or plain text from a page without rendering an image (`GET /extract`):
+
+```java
+import com.snapshotflow.extract.*;
+
+ExtractResult extracted = client.extract().extract(
+        ExtractRequest.url("https://example.com")
+                .format(ContentFormat.MARKDOWN)
+                .maxChars(50_000)
+                .build());
+System.out.println(extracted.content());
 ```
 
 ---
@@ -216,6 +250,14 @@ import com.snapshotflow.diff.*;
 DiffResult diff = client.diff().compare("https://example.com", "https://staging.example.com");
 diff.diffPercent().ifPresent(p -> System.out.println("changed: " + p + "%"));
 diff.writeTo(Path.of("diff.png"));   // the rendered diff image
+
+// Or customize blocking / wait strategy / threshold:
+DiffResult custom = client.diff().compare(
+        DiffRequest.of("https://example.com", "https://staging.example.com")
+                .blockAds(true)
+                .blockCookieBanners(true)
+                .waitUntil(WaitUntil.NETWORK_IDLE_2)
+                .build());
 ```
 
 ---
@@ -228,7 +270,11 @@ For authenticated users with history enabled:
 import com.snapshotflow.history.*;
 
 ScreenshotPage page = client.history().list(50, 0);
-page.items().forEach(s -> System.out.println(s.screenshotId() + " " + s.sourceUrl().orElse("(html)")));
+page.items().forEach(s -> System.out.println(
+        s.screenshotId() + " " + s.sourceUrl().orElse("(html)") + " -> " + s.downloadUrl().orElse("-")));
+
+// Skip signed-URL generation for faster metadata-only listing, or override signed-URL TTL:
+ScreenshotPage lite = client.history().list(50, 0, null, true);
 
 ScreenshotDetail detail = client.history().get(page.items().get(0).screenshotId());
 System.out.println(detail.downloadUrl());     // fresh signed URL
@@ -300,22 +346,22 @@ SnapshotFlowClient client = SnapshotFlowClient.builder()
         .apiKey("e2e_your_api_key")
         .baseUrl("https://api.snapshotflow.com")   // override for self-hosting
         .connectTimeout(Duration.ofSeconds(10))
-        .requestTimeout(Duration.ofSeconds(60))
+        .requestTimeout(Duration.ofSeconds(90))
         .maxRetries(2)                              // idempotent GETs only; 0 disables
         .retryBackoff(Duration.ofMillis(500))
         .build();
 ```
 
 Idempotent requests (GETs) are retried on network errors and `408/429/5xx`,
-honoring `Retry-After`. Async job submission is never auto-retried (a retry
-would create a duplicate job).
+honoring `Retry-After`. Async job submission and `/diff` are never auto-retried
+(a retry would duplicate work or double-charge quota).
 
 ---
 
 ## Scope
 
-This SDK covers the full public API: `/screenshot` (sync + async), `/batch`,
-`/diff`, `/jobs/:id`, `/screenshots` history, `/api/auth/*` (sessions, API keys,
+This SDK covers the full public API: `/screenshot` (sync + async), `/batch` (sync + async),
+`/diff`, `/extract`, `/jobs/:id`, `/screenshots` history, `/api/auth/*` (sessions, API keys,
 webhook secrets), `/health`, and client-side webhook signature verification.
 
 The server's `/.well-known/*`, `/oauth/*` and `/mcp` endpoints are internal

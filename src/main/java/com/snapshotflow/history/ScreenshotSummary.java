@@ -14,6 +14,8 @@ public final class ScreenshotSummary {
     private Integer height;
     private String createdAt;
     private String expiresAt;
+    private String downloadUrl;
+    private String downloadUrlExpiresAt;
 
     public String screenshotId() {
         return screenshotId;
@@ -43,6 +45,16 @@ public final class ScreenshotSummary {
     /** When the stored file expires and the row is purged. */
     public String expiresAt() {
         return expiresAt;
+    }
+
+    /** Pre-signed download URL (absent when {@code lite=true} was requested or signing failed). */
+    public Optional<String> downloadUrl() {
+        return Optional.ofNullable(downloadUrl);
+    }
+
+    /** When {@link #downloadUrl()} stops working. */
+    public Optional<String> downloadUrlExpiresAt() {
+        return Optional.ofNullable(downloadUrlExpiresAt);
     }
 
     @Override

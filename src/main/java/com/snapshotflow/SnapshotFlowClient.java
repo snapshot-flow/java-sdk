@@ -5,6 +5,7 @@ import com.snapshotflow.account.AuthApi;
 import com.snapshotflow.account.WebhookSecretApi;
 import com.snapshotflow.batch.BatchApi;
 import com.snapshotflow.diff.DiffApi;
+import com.snapshotflow.extract.ExtractApi;
 import com.snapshotflow.health.HealthApi;
 import com.snapshotflow.history.HistoryApi;
 import com.snapshotflow.internal.ApiInvoker;
@@ -35,7 +36,7 @@ import java.time.Duration;
  * }</pre>
  *
  * Operations are grouped into sub-APIs: {@link #screenshots()}, {@link #batch()},
- * {@link #diff()}, {@link #jobs()}, {@link #history()}, {@link #auth()},
+ * {@link #diff()}, {@link #extract()}, {@link #jobs()}, {@link #history()}, {@link #auth()},
  * {@link #apiKeys()}, {@link #webhookSecrets()} and {@link #health()}. Account
  * management ({@code apiKeys}, {@code webhookSecrets}, {@code auth().me()})
  * requires a Bearer (JWT) credential — obtain one with {@code auth().login(...)}
@@ -52,6 +53,7 @@ public final class SnapshotFlowClient {
     private final ScreenshotApi screenshots;
     private final BatchApi batch;
     private final DiffApi diff;
+    private final ExtractApi extract;
     private final JobApi jobs;
     private final HistoryApi history;
     private final AuthApi authApi;
@@ -66,6 +68,7 @@ public final class SnapshotFlowClient {
         this.screenshots = new ScreenshotApi(invoker);
         this.batch = new BatchApi(invoker);
         this.diff = new DiffApi(invoker);
+        this.extract = new ExtractApi(invoker);
         this.jobs = new JobApi(invoker);
         this.history = new HistoryApi(invoker);
         this.authApi = new AuthApi(invoker);
@@ -95,6 +98,10 @@ public final class SnapshotFlowClient {
 
     public DiffApi diff() {
         return diff;
+    }
+
+    public ExtractApi extract() {
+        return extract;
     }
 
     public JobApi jobs() {
@@ -160,7 +167,7 @@ public final class SnapshotFlowClient {
         private String apiKey;
         private String bearerToken;
         private Duration connectTimeout = Duration.ofSeconds(10);
-        private Duration requestTimeout = Duration.ofSeconds(60);
+        private Duration requestTimeout = Duration.ofSeconds(90);
         private int maxRetries = 2;
         private Duration retryBackoff = Duration.ofMillis(500);
         private String userAgent = Sdk.USER_AGENT;

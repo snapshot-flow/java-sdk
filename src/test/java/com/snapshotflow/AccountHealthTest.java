@@ -4,7 +4,12 @@ import com.snapshotflow.account.CreatedApiKey;
 import com.snapshotflow.account.TokenPair;
 import com.snapshotflow.account.UserProfile;
 import com.snapshotflow.account.WebhookSecretMetadata;
+import com.snapshotflow.extract.ExtractRequest;
+import com.snapshotflow.extract.ExtractResult;
 import com.snapshotflow.health.HealthStatus;
+import com.snapshotflow.history.ScreenshotPage;
+import com.snapshotflow.history.ScreenshotSummary;
+import com.snapshotflow.screenshot.ContentFormat;
 import com.snapshotflow.support.Responses;
 import com.snapshotflow.support.StubTransport;
 import org.junit.jupiter.api.Test;
@@ -81,5 +86,63 @@ class AccountHealthTest {
         assertEquals(3, health.browserPool().size());
         assertEquals(2, health.browserPool().available());
         assertEquals("redis", health.cache());
+    }
+
+    @Test
+    void historyListWithTtlAndLiteParsesDownloadUrls() {
+        StubTransport transport = new StubTransport()
+                .enqueue(Responses.json(200,
+                        "{\"total\":1,\"limit\":10,\"offset\":0,\"items\":[{"
+                                + "\"screenshotId\":\"ss-1\",\"sourceUrl\":\"https://a\",\"format\":\"png\","
+                                + "\"width\":1280,\"height\":800,\"createdAt\":\"t0\",\"expiresAt\":\"t1\","
+                                + "\"downloadUrl\":\"https://signed\",\"downloadUrlExpiresAt\":\"t2\"}]}"))
+                .enqueue(Responses.json(200,
+                        "{\"total\":1,\"limit\":10,\"offset\":0,\"items\":[{"
+                                + "\"screenshotId\":\"ss-1\",\"sourceUrl\":\"https://a\",\"format\":\"png\","
+                                + "\"width\":1280,\"height\":800,\"createdAt\":\"t0\",\"expiresAt\":\"t1\","
+                                + "\"downloadUrl\":null,\"downloadUrlExpiresAt\":null}]}"));
+
+        SnapshotFlowClient client = SnapshotFlowClient.builder().bearerToken("jwt").transport(transport).build();
+        ScreenshotPage page = client.history().list(10, 0, 3600, false);
+
+        ScreenshotSummary item = page.items().get(0);
+        assertEquals("https://signed", item.downloadUrl().orElse(null));
+        assertEquals("t2", item.downloadUrlExpiresAt().orElse(null));
+        String url1 = transport.last().url;
+        assertTrue(url1.contains("limit=10"));
+        assertTrue(url1.contains("offset=0"));
+        assertTrue(url1.contains("ttl=3600"));
+        assertTrue(url1.contains("lite=false"));
+
+        ScreenshotPage litePage = client.history().list(10, 0, null, true);
+        assertFalse(litePage.items().get(0).downloadUrl().isPresent());
+        assertFalse(litePage.items().get(0).downloadUrlExpiresAt().isPresent());
+        assertTrue(transport.last().url.contains("lite=true"));
+    }
+
+    @Test
+    void extractSendsQueryParamsAndParsesResult() {
+        StubTransport transport = new StubTransport().enqueue(Responses.json(200,
+                "{\"url\":\"https://example.com\",\"format\":\"markdown\",\"content\":\"# Hi\","
+                        + "\"chars\":4,\"truncated\":false,\"took_ms\":42}"));
+
+        ExtractResult result = SnapshotFlowClient.builder().apiKey("k").transport(transport).build()
+                .extract().extract(ExtractRequest.url("https://example.com")
+                        .format(ContentFormat.MARKDOWN)
+                        .maxChars(5000)
+                        .build());
+
+        assertEquals("https://example.com", result.url());
+        assertEquals(ContentFormat.MARKDOWN, result.format());
+        assertEquals("# Hi", result.content());
+        assertEquals(4, result.chars());
+        assertFalse(result.truncated());
+        assertEquals(42L, result.tookMs());
+
+        String url = transport.last().url;
+        assertTrue(url.contains("/extract?"));
+        assertTrue(url.contains("url=https%3A%2F%2Fexample.com"));
+        assertTrue(url.contains("format=markdown"));
+        assertTrue(url.contains("max_chars=5000"));
     }
 }

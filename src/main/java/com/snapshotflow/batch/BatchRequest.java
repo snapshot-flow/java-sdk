@@ -2,6 +2,7 @@ package com.snapshotflow.batch;
 
 import com.snapshotflow.internal.Validate;
 import com.snapshotflow.screenshot.OutputFormat;
+import com.snapshotflow.screenshot.WaitUntil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +21,9 @@ public final class BatchRequest {
     private final Integer width;
     private final Integer height;
     private final Boolean fullPage;
+    private final Boolean blockAds;
+    private final Boolean blockCookieBanners;
+    private final WaitUntil waitUntil;
     private final BatchResponseType responseType;
 
     private BatchRequest(Builder b) {
@@ -29,6 +33,9 @@ public final class BatchRequest {
         this.width = b.width;
         this.height = b.height;
         this.fullPage = b.fullPage;
+        this.blockAds = b.blockAds;
+        this.blockCookieBanners = b.blockCookieBanners;
+        this.waitUntil = b.waitUntil;
         this.responseType = b.responseType;
     }
 
@@ -62,9 +69,24 @@ public final class BatchRequest {
         if (fullPage != null) {
             body.put("full_page", fullPage);
         }
+        if (blockAds != null) {
+            body.put("block_ads", blockAds);
+        }
+        if (blockCookieBanners != null) {
+            body.put("block_cookie_banners", blockCookieBanners);
+        }
+        if (waitUntil != null) {
+            body.put("wait_until", waitUntil.wire());
+        }
         if (responseType != null) {
             body.put("response_type", responseType.wire());
         }
+        return body;
+    }
+
+    Map<String, Object> toAsyncBody() {
+        Map<String, Object> body = toBody();
+        body.put("async", Boolean.TRUE);
         return body;
     }
 
@@ -75,6 +97,9 @@ public final class BatchRequest {
         private Integer width;
         private Integer height;
         private Boolean fullPage;
+        private Boolean blockAds;
+        private Boolean blockCookieBanners;
+        private WaitUntil waitUntil;
         private BatchResponseType responseType;
 
         public Builder urls(String... urls) {
@@ -120,6 +145,21 @@ public final class BatchRequest {
 
         public Builder fullPage(boolean fullPage) {
             this.fullPage = fullPage;
+            return this;
+        }
+
+        public Builder blockAds(boolean blockAds) {
+            this.blockAds = blockAds;
+            return this;
+        }
+
+        public Builder blockCookieBanners(boolean blockCookieBanners) {
+            this.blockCookieBanners = blockCookieBanners;
+            return this;
+        }
+
+        public Builder waitUntil(WaitUntil waitUntil) {
+            this.waitUntil = waitUntil;
             return this;
         }
 
