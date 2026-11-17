@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,6 +13,12 @@ class ClientBuilderTest {
 
     private static SnapshotFlowClient.Builder builder() {
         return SnapshotFlowClient.builder().transport(new StubTransport());
+    }
+
+    @Test
+    void defaultRequestTimeoutIsNinetySeconds() {
+        SnapshotFlowClient client = builder().build();
+        assertEquals(Duration.ofSeconds(90), client.config().requestTimeout());
     }
 
     @Test

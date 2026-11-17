@@ -24,8 +24,9 @@ public final class DiffApi {
         Validate.notNull(request, "request");
         // Default to base64 so callers get both the stats and the rendered diff image.
         ResponseType effective = request.responseType() != null ? request.responseType() : ResponseType.BASE64;
+        // Opt out of automatic retries: diff runs two live renders and charges 2 quota units.
         ApiResponse response = invoker.invoke(
-                ApiRequest.get("/diff").query(request.toQuery(effective)).build());
+                ApiRequest.get("/diff").query(request.toQuery(effective)).idempotent(false).build());
         return DiffResult.fromResponse(response);
     }
 }

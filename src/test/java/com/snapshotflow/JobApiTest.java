@@ -2,6 +2,9 @@ package com.snapshotflow;
 
 import com.snapshotflow.exception.SnapshotFlowException;
 import com.snapshotflow.job.Job;
+import com.snapshotflow.job.JobKind;
+import com.snapshotflow.job.JobProgress;
+import com.snapshotflow.screenshot.OutputFormat;
 import com.snapshotflow.support.Responses;
 import com.snapshotflow.support.StubTransport;
 import org.junit.jupiter.api.Test;
@@ -58,5 +61,26 @@ class JobApiTest {
         long elapsedMillis = (System.nanoTime() - start) / 1_000_000;
 
         assertTrue(elapsedMillis < 5_000, "await overshot its timeout: " + elapsedMillis + "ms");
+    }
+
+    @Test
+    void getParsesBatchJobProgressAndResults() {
+        StubTransport transport = new StubTransport().enqueue(Responses.json(200,
+                "{\"id\":\"bj-1\",\"kind\":\"batch\",\"status\":\"processing\",\"createdAt\":\"t0\","
+                        + "\"startedAt\":\"t1\",\"progress\":{\"completed\":1,\"total\":2},"
+                        + "\"batchResults\":[{\"url\":\"https://a\",\"format\":\"png\",\"cached\":false,"
+                        + "\"downloadUrl\":\"https://signed-a\",\"screenshotId\":\"ss-a\"}]}"));
+
+        Job job = client(transport).jobs().get("bj-1");
+
+        assertEquals(JobKind.BATCH, job.kind().orElse(null));
+        JobProgress progress = job.progress().orElseThrow(AssertionError::new);
+        assertEquals(1, progress.completed());
+        assertEquals(2, progress.total());
+        assertEquals(1, job.batchResults().size());
+        assertEquals("https://a", job.batchResults().get(0).url());
+        assertEquals(OutputFormat.PNG, job.batchResults().get(0).format().orElse(null));
+        assertEquals("https://signed-a", job.batchResults().get(0).downloadUrl().orElse(null));
+        assertEquals("ss-a", job.batchResults().get(0).screenshotId().orElse(null));
     }
 }

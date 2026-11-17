@@ -29,7 +29,19 @@ public final class HistoryApi {
     }
 
     public ScreenshotPage list(int limit, int offset) {
-        QueryParams query = new QueryParams().add("limit", limit).add("offset", offset);
+        return list(limit, offset, null, null);
+    }
+
+    /**
+     * Fetch a page of screenshot history with optional signed-URL TTL ({@code 60–604800} seconds)
+     * and {@code lite} mode (pass {@code true} to skip signed-URL generation for faster listing).
+     */
+    public ScreenshotPage list(int limit, int offset, Integer ttlSeconds, Boolean lite) {
+        QueryParams query = new QueryParams()
+                .add("limit", limit)
+                .add("offset", offset)
+                .add("ttl", ttlSeconds)
+                .add("lite", lite);
         ApiResponse response = invoker.invoke(ApiRequest.get("/screenshots").query(query).build());
         return Json.read(response.body(), ScreenshotPage.class);
     }

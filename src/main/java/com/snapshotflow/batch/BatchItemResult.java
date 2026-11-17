@@ -13,6 +13,7 @@ public final class BatchItemResult {
     private Boolean cached;
     private String image;
     private String storagePath;
+    private String downloadUrl;
     private String screenshotId;
     private String error;
 
@@ -44,6 +45,11 @@ public final class BatchItemResult {
 
     public Optional<String> storagePath() {
         return Optional.ofNullable(storagePath);
+    }
+
+    /** Signed download URL when the batch used {@link BatchResponseType#IMAGE_URLS} or ran as an async batch job. */
+    public Optional<String> downloadUrl() {
+        return Optional.ofNullable(downloadUrl);
     }
 
     public Optional<String> screenshotId() {
